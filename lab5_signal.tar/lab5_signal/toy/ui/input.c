@@ -59,9 +59,18 @@ void segfault_handler(int sig_num, siginfo_t * info, void * ucontext) {
 
 int input()
 {
+    sigset_t blockMask, emptyMask;
+    struct sigaction sa;
+
     printf("나 input 프로세스!\n");
 
     /* 여기서 SIGSEGV 시그널 등록 */
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags=0;
+    sa.sa_handler = segfault_handler;
+    if(sigaction(SIGSEGV, &sa, NULL) == -1) // register SIGCHLD handler
+        perror("sigaction error");
+
 
     while (1) {
         sleep(1);

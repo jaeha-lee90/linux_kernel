@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <sys/wait.h>
+#include <signal.h>
+#include <unistd.h>
 
 #include <system_server.h>
 #include <gui.h>
@@ -10,7 +12,18 @@
 static void
 sigchldHandler(int sig)
 {
-    /* 구현 */
+    int status, oldErrno;
+    pid_t childpid;
+
+    oldErrno = errno;
+    printf("handler : Caught SIGCHLD : 17\n");
+    printf("handler : returning\n");
+    /*
+    while((childpid=waitpid(-1, &status, WNOHANG)) > 0){
+        printf("handler : reaping child(PID : %d)", childpid);
+    }
+    */
+    errno = oldErrno;
 }
 
 int main()
@@ -22,6 +35,18 @@ int main()
     struct sigaction sa;
 
     /* 여기서 SIGCHLD 시그널  등록 */
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags=0;
+    sa.sa_handler = sigchldHandler;
+    if(sigaction(SIGCHLD, &sa, NULL) == -1) // register SIGCHLD handler
+        perror("sigaction error");
+    
+    /*
+    sigemptyset(&blockMask);
+    sigaddset(&blockMask, SIGCHLD);
+    if(sigprocmask(SIG_SETMASK, &blockMask, NULL) == -1)
+        perror("sigprocmask failed");
+    */
 
     printf("메인 함수입니다.\n");
     printf("시스템 서버를 생성합니다.\n");
